@@ -62,7 +62,7 @@ type DbAppointment = {
 
 export type BookingContext = {
   barbershop: Barbershop;
-  barber: Barber;
+  barber: Barber | null;
   services: Service[];
   workingHours: WorkingHour[];
   appointments: Appointment[];
@@ -114,20 +114,18 @@ export async function getBookingContext(slug: string): Promise<BookingContext | 
 
   const barber = barberRows?.[0];
 
-  if (!barber || !serviceRows?.length) {
-    return getSeedContext();
-  }
-
-  const { data: hoursRows } = await supabase
-    .from("working_hours")
-    .select("id,barber_id,day_of_week,start_time,end_time,break_start,break_end,is_active")
-    .eq("barber_id", barber.id)
-    .returns<DbWorkingHour[]>();
+  const { data: hoursRows } = barber
+    ? await supabase
+        .from("working_hours")
+        .select("id,barber_id,day_of_week,start_time,end_time,break_start,break_end,is_active")
+        .eq("barber_id", barber.id)
+        .returns<DbWorkingHour[]>()
+    : { data: [] as DbWorkingHour[] };
 
   return {
     barbershop: mapBarbershop(shop),
-    barber: mapBarber(barber),
-    services: serviceRows.map(mapService),
+    barber: barber ? mapBarber(barber) : null,
+    services: (serviceRows ?? []).map(mapService),
     workingHours: (hoursRows ?? []).map(mapWorkingHour),
     appointments: (appointmentRows ?? []).map(mapAppointment),
     googleCalendar: {

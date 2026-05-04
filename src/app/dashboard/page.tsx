@@ -10,7 +10,7 @@ const today = new Date().toISOString().slice(0, 10);
 export default async function DashboardPage() {
   const context = await getDashboardContext();
 
-  if (!context) {
+  if (!context || !context.barber) {
     return <UnlinkedDashboard />;
   }
 

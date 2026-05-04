@@ -25,6 +25,9 @@ export default async function BookPage({ params }: PageProps) {
     );
   }
 
+  const barber = context.barber;
+  const isConfigured = barber && context.services.length > 0 && context.workingHours.length > 0;
+
   return (
     <main className="min-h-screen bg-fog text-ink">
       <section className="mx-auto grid w-full max-w-6xl gap-8 px-6 py-8 lg:grid-cols-[0.9fr_1.1fr]">
@@ -50,13 +53,23 @@ export default async function BookPage({ params }: PageProps) {
             </p>
           </div>
         </aside>
-        <BookingWidget
-          appointments={context.appointments}
-          barbershop={context.barbershop}
-          barber={context.barber}
-          services={context.services}
-          workingHours={context.workingHours}
-        />
+        {isConfigured ? (
+          <BookingWidget
+            appointments={context.appointments}
+            barbershop={context.barbershop}
+            barber={barber}
+            services={context.services}
+            workingHours={context.workingHours}
+          />
+        ) : (
+          <section className="rounded bg-white p-5 shadow-soft">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-ember">Configuracion incompleta</p>
+            <h2 className="mt-2 text-3xl font-black">Esta barberia todavia no puede recibir citas.</h2>
+            <p className="mt-3 leading-7 text-neutral-700">
+              Faltan barbero activo, servicios u horarios laborales. Completa la configuracion desde el dashboard antes de compartir este link.
+            </p>
+          </section>
+        )}
       </section>
     </main>
   );

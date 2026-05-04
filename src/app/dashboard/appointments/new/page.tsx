@@ -4,7 +4,7 @@ import { getDashboardContext } from "@/lib/data";
 export default async function NewAppointmentPage() {
   const context = await getDashboardContext();
 
-  if (!context) {
+  if (!context || !context.barber) {
     return (
       <section className="rounded bg-white p-5 shadow-soft">
         <h1 className="text-2xl font-black">Usuario sin barberia asignada.</h1>
