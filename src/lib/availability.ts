@@ -14,7 +14,7 @@ export function getAvailableSlots({
   service,
   workingHours,
   appointments,
-  slotStepMinutes = 5
+  slotStepMinutes = 15
 }: AvailabilityInput) {
   const dayOfWeek = new Date(`${date}T12:00:00`).getDay();
   const workingDay = workingHours.find((item) => item.dayOfWeek === dayOfWeek && item.isActive);

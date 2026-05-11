@@ -4,14 +4,8 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Check, Clock, MessageSquareText, Scissors } from "lucide-react";
 import { getAvailableSlots, getEndTime } from "@/lib/availability";
-import { formatDateLong, formatMoney } from "@/lib/format";
+import { formatDateLong, formatMoney, formatTime12h, getTomorrowDate } from "@/lib/format";
 import type { Appointment, Barber, Barbershop, Service, WorkingHour } from "@/lib/types";
-
-const dateOptions = Array.from({ length: 10 }).map((_, index) => {
-  const date = new Date();
-  date.setDate(date.getDate() + index);
-  return date.toISOString().slice(0, 10);
-});
 
 type BookingWidgetProps = {
   barbershop: Barbershop;
@@ -23,8 +17,9 @@ type BookingWidgetProps = {
 
 export function BookingWidget({ barbershop, barber, services, workingHours, appointments }: BookingWidgetProps) {
   const router = useRouter();
+  const minimumDate = getTomorrowDate();
   const [serviceId, setServiceId] = useState(services[0].id);
-  const [date, setDate] = useState(dateOptions[0]);
+  const [date, setDate] = useState(minimumDate);
   const [time, setTime] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
@@ -133,48 +128,40 @@ export function BookingWidget({ barbershop, barber, services, workingHours, appo
         </div>
         <label className="grid gap-2 text-sm font-bold">
           Dia
-          <select
+          <input
             className="focus-ring rounded border border-neutral-200 bg-white px-3 py-3"
+            min={minimumDate}
             onChange={(event) => {
               setDate(event.target.value);
               setTime("");
             }}
+            type="date"
             value={date}
+          />
+          <span className="text-xs font-normal text-neutral-600">{formatDateLong(date)}</span>
+        </label>
+
+        <label className="mt-4 grid gap-2 text-sm font-bold">
+          <span className="flex items-center gap-2">
+            <Clock size={16} className="text-ember" />
+            Horarios disponibles
+          </span>
+          <select
+            className="focus-ring rounded border border-neutral-200 bg-white px-3 py-3 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500"
+            disabled={availableSlots.length === 0}
+            onChange={(event) => setTime(event.target.value)}
+            value={time}
           >
-            {dateOptions.map((item) => (
-              <option key={item} value={item}>
-                {formatDateLong(item)}
+            <option value="">
+              {availableSlots.length > 0 ? "Selecciona una hora" : "No hay horarios disponibles para este dia"}
+            </option>
+            {availableSlots.map((slot) => (
+              <option key={slot} value={slot}>
+                {formatTime12h(slot)}
               </option>
             ))}
           </select>
         </label>
-
-        <div className="mt-4 grid gap-2">
-          <div className="flex items-center gap-2 text-sm font-bold">
-            <Clock size={16} className="text-ember" />
-            Horarios disponibles
-          </div>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-            {availableSlots.length > 0 ? (
-              availableSlots.map((slot) => (
-                <button
-                  className={`rounded border px-3 py-2 text-sm font-bold transition ${
-                    slot === time ? "border-ink bg-ink text-white" : "border-neutral-200 bg-white hover:border-ink"
-                  }`}
-                  key={slot}
-                  onClick={() => setTime(slot)}
-                  type="button"
-                >
-                  {slot}
-                </button>
-              ))
-            ) : (
-              <p className="col-span-full rounded bg-neutral-100 p-4 text-sm text-neutral-700">
-                No hay horarios disponibles para esta fecha.
-              </p>
-            )}
-          </div>
-        </div>
       </section>
 
       <section className="rounded bg-white p-5 shadow-soft">
